@@ -97,6 +97,7 @@ header h1 {
   grid-template-columns: 52px repeat(5, 1fr);
   min-width: 580px;
   gap: 0 6px;
+  position: sticky;
 }
 
 .day-headers {
