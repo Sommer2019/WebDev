@@ -186,6 +186,19 @@ header h1 {
   position: sticky;
 }
 
+/* === Event positions (top / height derived from 1.5 px per minute, origin 06:00) === */
+.day-track[aria-label="Montag"]    .ev-axa      { top: 45px;    height: 729px;   }
+.day-track[aria-label="Dienstag"]  .ev-axa      { top: 45px;    height: 729px;   }
+.day-track[aria-label="Mittwoch"]  .ev-axa      { top: 90px;    height: 360px;   }
+.day-track[aria-label="Mittwoch"]  .ev-mainframe{ top: 630px;   height: 210px;   }
+.day-track[aria-label="Mittwoch"]  .ev-ctf      { top: 840px;   height: 262.5px; }
+.day-track[aria-label="Donnerstag"].ev-ml       { top: 225px;   height: 292.5px; }
+.day-track[aria-label="Donnerstag"].ev-ptp      { top: 517.5px; height: 255px;   }
+.day-track[aria-label="Donnerstag"].ev-webdev   { top: 772.5px; height: 285px;   }
+.day-track[aria-label="Freitag"]   .ev-erp      { top: 157.5px; height: 292.5px; }
+.day-track[aria-label="Freitag"]   .ev-comnet   { top: 450px;   height: 322.5px; }
+.day-track[aria-label="Freitag"]   .ev-english  { top: 772.5px; height: 285px;   }
+
 /* === Event colour classes === */
 .ev-axa      { background: var(--axa-bg); }
 .ev-mainframe{ background: var(--mainframe-bg); }
