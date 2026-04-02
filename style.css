@@ -263,7 +263,7 @@ header h1 {
 }
 
 /* === Responsive breakpoint === */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   .desktop-schedule { display: none; }
   .mobile-schedule  { display: flex; }
 }
