@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Formular</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formular</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<header>
+    <h1>📋 Formular</h1>
+    <button class="theme-btn" id="themeToggle" aria-label="Farbschema wechseln">🌙 / ☀️</button>
+</header>
+<div class="form-container">
+    <form id="registration" class="registration-form">
+        <!-- Name -->
+        <div class="form-group">
+            <label for="name">Name *</label>
+            <input type="text" id="name" name="name" placeholder="Vollständiger Name" required>
+            <span class="error-message" id="name-error"></span>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label for="email">E-Mail *</label>
+            <input type="email" id="email" name="email" placeholder="deine@email.com" required>
+            <span class="error-message" id="email-error"></span>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+            <label for="password">Passwort *</label>
+            <input type="password" id="password" name="password" placeholder="Mindestens 8 Zeichen" required>
+            <span class="error-message" id="password-error"></span>
+        </div>
+
+        <!-- Password Confirmation -->
+        <div class="form-group">
+            <label for="password-confirm">Passwort bestätigen *</label>
+            <input type="password" id="password-confirm" name="password-confirm" placeholder="Passwort wiederholen" required>
+            <span class="error-message" id="password-confirm-error"></span>
+        </div>
+
+        <!-- Anrede (Salutation) -->
+        <div class="form-group">
+            <label for="salutation">Anrede *</label>
+            <select id="salutation" name="salutation" required>
+                <option value="" disabled selected>-- Bitte wählen --</option>
+                <option value="herr">Herr</option>
+                <option value="frau">Frau</option>
+                <option value="firma">Firma</option>
+                <option value="keine">Keine Anrede</option>
+            </select>
+            <span class="error-message" id="salutation-error"></span>
+        </div>
+
+        <!-- Profile Picture Upload -->
+        <div class="form-group">
+            <label for="profilepic">Profilbild (1 Datei, max 5MB) *</label>
+            <div class="file-input-wrapper" aria-label="Profilbild auswählen oder hierher ziehen">
+                <input type="file" id="profilepic" name="profilepic" accept="image/*" required>
+                <span class="file-name">Keine Datei ausgewählt</span>
+                <small class="file-hint">Eine Bilddatei hierher ziehen oder klicken</small>
+            </div>
+            <span class="error-message" id="profilepic-error"></span>
+        </div>
+
+        <!-- Hobbies Selection -->
+        <div class="form-group">
+            <label>Hobbies (Bitte 1-3 auswählen) *</label>
+            <div class="checkbox-group hobbies">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hobbies" value="lesen">
+                    <span>Lesen</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hobbies" value="sport">
+                    <span>Sport</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" name="hobbies" value="gaming">
+                    <span>Gaming</span>
+                </label><label class="checkbox-label">
+                <input type="checkbox" name="hobbies" value="schlafen">
+                <span>Schlafen</span>
+            </label><label class="checkbox-label">
+                <input type="checkbox" name="hobbies" value="essen">
+                <span>Essen</span>
+            </label>
+            </div>
+            <span class="error-message" id="hobbies-error"></span>
+        </div>
+
+        <!-- Kurzbeschreibung-->
+        <div class="form-group">
+            <label for="description">Kurzbeschreibung über dich</label>
+            <textarea id="description" name="description" rows="4" placeholder="Erzähle uns etwas über dich (max. 500 Zeichen)" maxlength="500"></textarea>
+            <span class="error-message" id="description-error"></span>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="form-group">
+            <label class="checkbox-label checkbox-terms">
+                <input type="checkbox" id="terms" name="terms" required>
+                <span>Ich akzeptiere die <a href="#" class="terms-link">Allgemeinen Geschäftsbedingungen</a> *</span>
+            </label>
+            <span class="error-message" id="terms-error"></span>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="reset" class="reset-btn">Formular zurücksetzen</button>
+            <button type="submit" class="submit-btn">Registrieren</button>
+        </div>
+    </form>
+</div>
+<a href="../index.html" class="form-link">Zurück zum Stundenplan</a>
+<script src="../js/darkmode.js"></script>
+<script src="../js/form-validation.js"></script>
+</body>
+</html>
