@@ -53,6 +53,16 @@
     return open;
   };
 
+  const insertAutoParenAfterPower = () => {
+    const lastNonWhitespace = lastChar();
+    return lastNonWhitespace === '^';
+  };
+
+  const insertAutoParenBeforeNegative = () => {
+    const lastNonWhitespace = lastChar();
+    return ['^', '/', '*', '+'].includes(lastNonWhitespace);
+  };
+
   const shouldInsertMultiplication = (value) => {
     const prev = lastChar();
     if (!prev) {
@@ -150,6 +160,12 @@
         updateExpressionView();
         return;
       }
+    }
+
+    if (value === '-' && insertAutoParenAfterPower()) {
+      expressionInput.value += '(';
+    } else if (value === '-' && insertAutoParenBeforeNegative()) {
+      expressionInput.value += '(';
     }
 
     expressionInput.value += value;

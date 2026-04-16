@@ -450,18 +450,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="button" class="calc-btn fn" data-value="sqrt(" title="Gedrückt halten für n-te Wurzel">√x</button>
             <button type="button" class="calc-btn fn" data-value="^" title="Potenz">xʸ</button>
             <button type="button" class="calc-btn" data-action="backspace">⌫</button>
-            <button type="button" class="calc-btn op" data-value="(">(</button>
-            <button type="button" class="calc-btn op" data-value=")">)</button>
-            <button type="button" class="calc-btn op" data-value="/">÷</button>
+            <button type="button" class="calc-btn op" data-value="+">+</button>
+            <button type="button" class="calc-btn op" data-value="-">−</button>
             <button type="button" class="calc-btn op" data-value="*">×</button>
+            <button type="button" class="calc-btn op" data-value="/">÷</button>
             <button type="button" class="calc-btn" data-value="7">7</button>
             <button type="button" class="calc-btn" data-value="8">8</button>
             <button type="button" class="calc-btn" data-value="9">9</button>
-            <button type="button" class="calc-btn op" data-value="-">−</button>
+            <button type="button" class="calc-btn op" data-value="(">(</button>
             <button type="button" class="calc-btn" data-value="4">4</button>
             <button type="button" class="calc-btn" data-value="5">5</button>
             <button type="button" class="calc-btn" data-value="6">6</button>
-            <button type="button" class="calc-btn op" data-value="+">+</button>
+            <button type="button" class="calc-btn op" data-value=")">)</button>
             <button type="button" class="calc-btn" data-value="1">1</button>
             <button type="button" class="calc-btn" data-value="2">2</button>
             <button type="button" class="calc-btn" data-value="3">3</button>
