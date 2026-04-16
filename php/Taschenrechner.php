@@ -10,20 +10,178 @@ function isOperatorToken(string $token): bool
 }
 function isFunctionToken(string $token): bool
 {
-    return in_array($token, ['sqrt', 'root'], true);
+    return in_array($token, ['sqrt', 'root', 'neg'], true);
 }
+
+function normalizeNearZero(float $value): float
+{
+    return abs($value) < 1.0e-10 ? 0.0 : $value;
+}
+
+function makeComplex(float $re, float $im = 0.0): array
+{
+    return [
+        're' => normalizeNearZero($re),
+        'im' => normalizeNearZero($im),
+    ];
+}
+
+function complexIsZero(array $value): bool
+{
+    return abs($value['re']) < 1.0e-10 && abs($value['im']) < 1.0e-10;
+}
+
+function complexAdd(array $a, array $b): array
+{
+    return makeComplex($a['re'] + $b['re'], $a['im'] + $b['im']);
+}
+
+function complexSub(array $a, array $b): array
+{
+    return makeComplex($a['re'] - $b['re'], $a['im'] - $b['im']);
+}
+
+function complexMul(array $a, array $b): array
+{
+    return makeComplex(
+        $a['re'] * $b['re'] - $a['im'] * $b['im'],
+        $a['re'] * $b['im'] + $a['im'] * $b['re']
+    );
+}
+
+function complexDiv(array $a, array $b): array
+{
+    $denominator = $b['re'] * $b['re'] + $b['im'] * $b['im'];
+    if ($denominator < 1.0e-12) {
+        throw new InvalidArgumentException('Division durch 0 ist nicht erlaubt.');
+    }
+
+    return makeComplex(
+        ($a['re'] * $b['re'] + $a['im'] * $b['im']) / $denominator,
+        ($a['im'] * $b['re'] - $a['re'] * $b['im']) / $denominator
+    );
+}
+
+function complexSqrt(array $value): array
+{
+    $modulus = hypot($value['re'], $value['im']);
+    $realPart = sqrt(max(0.0, ($modulus + $value['re']) / 2.0));
+    $imagPartMagnitude = sqrt(max(0.0, ($modulus - $value['re']) / 2.0));
+    $imagPart = $value['im'] < 0.0 ? -$imagPartMagnitude : $imagPartMagnitude;
+
+    return makeComplex($realPart, $imagPart);
+}
+
+function complexPow(array $base, array $exponent): array
+{
+    if (complexIsZero($base)) {
+        if (abs($exponent['im']) > 1.0e-10 || $exponent['re'] < 0.0) {
+            throw new InvalidArgumentException('Division durch 0 ist nicht erlaubt.');
+        }
+
+        return makeComplex($exponent['re'] == 0.0 ? 1.0 : 0.0, 0.0);
+    }
+
+    $modulus = hypot($base['re'], $base['im']);
+    $argument = atan2($base['im'], $base['re']);
+    $logReal = log($modulus);
+
+    $expReal = $exponent['re'] * $logReal - $exponent['im'] * $argument;
+    $expImag = $exponent['re'] * $argument + $exponent['im'] * $logReal;
+
+    $scale = exp($expReal);
+    return makeComplex($scale * cos($expImag), $scale * sin($expImag));
+}
+
+function formatScalar(float $value): string
+{
+    $value = normalizeNearZero($value);
+    
+    if ($value == 0.0) {
+        return '0';
+    }
+
+    $absValue = abs($value);
+    if ($absValue >= 1e9 || ($absValue < 1e-5 && $absValue > 0.0)) {
+        return sprintf('%.10e', $value);
+    }
+
+    $formatted = rtrim(rtrim(number_format($value, 10, '.', ''), '0'), '.');
+    return $formatted === '' || $formatted === '-0' ? '0' : $formatted;
+}
+
+function formatImaginaryTerm(float $imaginary, bool $forExpression): string
+{
+    $absImaginary = abs(normalizeNearZero($imaginary));
+    if (abs($absImaginary - 1.0) < 1.0e-10) {
+        return 'i';
+    }
+
+    $coefficient = formatScalar($absImaginary);
+    return $forExpression ? $coefficient . '*i' : $coefficient . 'i';
+}
+
+function formatComplexForDisplay(array $value): string
+{
+    $real = normalizeNearZero($value['re']);
+    $imaginary = normalizeNearZero($value['im']);
+
+    if ($real == 0.0 && $imaginary == 0.0) {
+        return '0';
+    }
+
+    if ($imaginary == 0.0) {
+        return formatScalar($real);
+    }
+
+    if ($real == 0.0) {
+        return ($imaginary < 0.0 ? '-' : '') . formatImaginaryTerm($imaginary, false);
+    }
+
+    return formatScalar($real)
+        . ($imaginary < 0.0 ? '-' : '+')
+        . formatImaginaryTerm($imaginary, false);
+}
+
+function formatComplexForExpression(array $value): string
+{
+    $real = normalizeNearZero($value['re']);
+    $imaginary = normalizeNearZero($value['im']);
+
+    if ($real == 0.0 && $imaginary == 0.0) {
+        return '0';
+    }
+
+    if ($imaginary == 0.0) {
+        return formatScalar($real);
+    }
+
+    if ($real == 0.0) {
+        return ($imaginary < 0.0 ? '-' : '') . formatImaginaryTerm($imaginary, true);
+    }
+
+    return formatScalar($real)
+        . ($imaginary < 0.0 ? '-' : '+')
+        . formatImaginaryTerm($imaginary, true);
+}
+
+function isFiniteComplex(array $value): bool
+{
+    return is_finite($value['re']) && is_finite($value['im']);
+}
+
 function tokenize(string $expression): array
 {
     $expression = trim(str_replace([' ', "\t", "\n", "\r", '√'], ['', '', '', '', 'sqrt'], $expression));
     if ($expression === '') {
         return [];
     }
-    preg_match_all('/\d+(?:\.\d+)?|sqrt|root|[+\-*\/^(),]|./i', $expression, $matches);
+    preg_match_all('/\d+(?:\.\d+)?|sqrt|root|i|[+\-*\/^(),]|./i', $expression, $matches);
     $tokens = $matches[0] ?? [];
     $normalized = [];
     foreach ($tokens as $token) {
         $token = strtolower($token);
-        if (isNumberToken($token) || isOperatorToken($token) || in_array($token, ['(', ')', ','], true) || isFunctionToken($token)) {
+        if (isNumberToken($token) || isOperatorToken($token) || in_array($token, ['(', ')', ',', 'i'], true) || isFunctionToken($token)) {
             $normalized[] = $token;
             continue;
         }
@@ -37,25 +195,51 @@ function toRpn(array $tokens): array
     $stack = [];
     $precedence = ['+' => 1, '-' => 1, '*' => 2, '/' => 2, '^' => 3];
     $rightAssociative = ['^' => true];
+    $expectOperand = true;
+
     foreach ($tokens as $token) {
-        if (isNumberToken($token)) {
+        if (isNumberToken($token) || $token === 'i') {
             $output[] = $token;
+            $expectOperand = false;
             continue;
         }
+
         if (isFunctionToken($token)) {
             $stack[] = $token;
+            $expectOperand = true;
             continue;
         }
+
         if ($token === ',') {
+            if ($expectOperand) {
+                throw new InvalidArgumentException('Trennzeichen ist an dieser Stelle nicht erlaubt.');
+            }
+
             while (!empty($stack) && end($stack) !== '(') {
                 $output[] = array_pop($stack);
             }
             if (empty($stack) || end($stack) !== '(') {
                 throw new InvalidArgumentException('Trennzeichen ist an dieser Stelle nicht erlaubt.');
             }
+
+            $expectOperand = true;
             continue;
         }
+
         if (isOperatorToken($token)) {
+            if ($expectOperand) {
+                if ($token === '-') {
+                    $stack[] = 'neg';
+                    continue;
+                }
+
+                if ($token === '+') {
+                    continue;
+                }
+
+                throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
+            }
+
             while (!empty($stack)) {
                 $top = end($stack);
                 if ($top === '(') {
@@ -77,13 +261,21 @@ function toRpn(array $tokens): array
                 $output[] = array_pop($stack);
             }
             $stack[] = $token;
+            $expectOperand = true;
             continue;
         }
+
         if ($token === '(') {
             $stack[] = $token;
+            $expectOperand = true;
             continue;
         }
+
         if ($token === ')') {
+            if ($expectOperand) {
+                throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
+            }
+
             while (!empty($stack) && end($stack) !== '(') {
                 $output[] = array_pop($stack);
             }
@@ -94,10 +286,18 @@ function toRpn(array $tokens): array
             if (!empty($stack) && isFunctionToken((string) end($stack))) {
                 $output[] = array_pop($stack);
             }
+
+            $expectOperand = false;
             continue;
         }
+
         throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
     }
+
+    if ($expectOperand) {
+        throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
+    }
+
     while (!empty($stack)) {
         $top = array_pop($stack);
         if ($top === '(' || $top === ')') {
@@ -107,14 +307,20 @@ function toRpn(array $tokens): array
     }
     return $output;
 }
-function evaluateRpn(array $rpn): float
+function evaluateRpn(array $rpn): array
 {
     $stack = [];
     foreach ($rpn as $token) {
         if (isNumberToken($token)) {
-            $stack[] = (float) $token;
+            $stack[] = makeComplex((float) $token, 0.0);
             continue;
         }
+
+        if ($token === 'i') {
+            $stack[] = makeComplex(0.0, 1.0);
+            continue;
+        }
+
         if (isOperatorToken($token)) {
             if (count($stack) < 2) {
                 throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
@@ -123,22 +329,19 @@ function evaluateRpn(array $rpn): float
             $a = array_pop($stack);
             switch ($token) {
                 case '+':
-                    $stack[] = $a + $b;
+                    $stack[] = complexAdd($a, $b);
                     break;
                 case '-':
-                    $stack[] = $a - $b;
+                    $stack[] = complexSub($a, $b);
                     break;
                 case '*':
-                    $stack[] = $a * $b;
+                    $stack[] = complexMul($a, $b);
                     break;
                 case '/':
-                    if ($b == 0.0) {
-                        throw new InvalidArgumentException('Division durch 0 ist nicht erlaubt.');
-                    }
-                    $stack[] = $a / $b;
+                    $stack[] = complexDiv($a, $b);
                     break;
                 case '^':
-                    $stack[] = $a ** $b;
+                    $stack[] = complexPow($a, $b);
                     break;
                 default:
                     throw new InvalidArgumentException('Unbekannter Operator.');
@@ -150,45 +353,51 @@ function evaluateRpn(array $rpn): float
                 throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
             }
             $value = array_pop($stack);
-            if ($value < 0.0) {
-                throw new InvalidArgumentException('Wurzeln aus negativen Zahlen sind nicht erlaubt.');
-            }
-            $stack[] = sqrt($value);
+            $stack[] = complexSqrt($value);
             continue;
         }
+
         if ($token === 'root') {
             if (count($stack) < 2) {
                 throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
             }
             $value = array_pop($stack);
             $degree = array_pop($stack);
-            $degreeRounded = (int) round($degree);
-            if ($degreeRounded <= 0 || abs($degree - $degreeRounded) > 1.0e-9) {
+            if (abs($degree['im']) > 1.0e-10) {
                 throw new InvalidArgumentException('Die Wurzel benötigt eine positive ganze Zahl als Grad.');
             }
-            if ($value < 0.0 && $degreeRounded % 2 === 0) {
-                throw new InvalidArgumentException('Gerade Wurzeln aus negativen Zahlen sind nicht erlaubt.');
+
+            $degreeRounded = (int) round($degree['re']);
+            if ($degreeRounded <= 0 || abs($degree['re'] - $degreeRounded) > 1.0e-9) {
+                throw new InvalidArgumentException('Die Wurzel benötigt eine positive ganze Zahl als Grad.');
             }
-            $rootValue = pow(abs($value), 1 / $degreeRounded);
-            $stack[] = $value < 0.0 ? -$rootValue : $rootValue;
+
+            $stack[] = complexPow($value, makeComplex(1.0 / $degreeRounded, 0.0));
             continue;
         }
+
+        if ($token === 'neg') {
+            if (count($stack) < 1) {
+                throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
+            }
+
+            $value = array_pop($stack);
+            $stack[] = makeComplex(-$value['re'], -$value['im']);
+            continue;
+        }
+
         throw new InvalidArgumentException('Unbekannter Operator.');
     }
     if (count($stack) !== 1) {
         throw new InvalidArgumentException('Ungültige mathematische Eingabe.');
     }
     $result = array_pop($stack);
-    if (!is_finite($result)) {
+    if (!isFiniteComplex($result)) {
         throw new InvalidArgumentException('Das Ergebnis ist zu groß oder ungültig.');
     }
     return $result;
 }
-function formatResult(float $value): string
-{
-    $formatted = rtrim(rtrim(number_format($value, 10, '.', ''), '0'), '.');
-    return $formatted === '' ? '0' : $formatted;
-}
+
 $expression = '';
 $result = '';
 $error = '';
@@ -204,8 +413,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tokens = tokenize($expression);
         $rpn = toRpn($tokens);
         $value = evaluateRpn($rpn);
-        $result = formatResult($value);
-        $nextExpression = $result;
+        $result = formatComplexForDisplay($value);
+        $nextExpression = formatComplexForExpression($value);
         $calculationWasSuccessful = true;
     } catch (InvalidArgumentException $e) {
         $error = $e->getMessage();

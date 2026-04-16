@@ -43,6 +43,15 @@
 
   const startsWithFunction = (value) => functionPrefixes.some((prefix) => value.startsWith(prefix));
   const lastChar = () => expressionInput.value.trimEnd().slice(-1);
+  const countOpenParens = () => {
+    const expr = expressionInput.value;
+    let open = 0;
+    for (const char of expr) {
+      if (char === '(') open++;
+      if (char === ')') open--;
+    }
+    return open;
+  };
 
   const shouldInsertMultiplication = (value) => {
     const prev = lastChar();
@@ -131,6 +140,16 @@
       clearErrorState();
       updateExpressionView();
       return;
+    }
+
+    if (value === ')') {
+      const openParens = countOpenParens();
+      if (openParens <= 0) {
+        expressionInput.value = '(' + expressionInput.value + ')';
+        clearErrorState();
+        updateExpressionView();
+        return;
+      }
     }
 
     expressionInput.value += value;
@@ -319,6 +338,12 @@
     }
 
     if (event.key === 'Escape') {
+      event.preventDefault();
+      clearCalculation();
+      return;
+    }
+
+    if (event.shiftKey && event.key === 'Delete') {
       event.preventDefault();
       clearCalculation();
       return;
