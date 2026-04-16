@@ -287,8 +287,6 @@ const updateSubmitState = () => {
 // Form Submit Handler
 if (form && submitBtn) {
   form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
     // Alle Felder validieren
     const fieldsToValidate = ['name', 'email', 'password', 'passwordConfirm', 'salutation', 'profilepic', 'hobbies', 'terms'];
     let allValid = true;
@@ -299,17 +297,13 @@ if (form && submitBtn) {
       }
     });
 
-    if (allValid) {
-      alert('Formular erfolgreich eingereicht! 🎉');
-      form.reset();
-      updateProfilePicUi(null);
-      setProfilePicErrorState(false);
-      showError('profilepic', '');
-      updateSubmitState();
+    if (!allValid) {
+      // Nur bei Fehlern den nativen Submit stoppen.
+      e.preventDefault();
+
     }
   });
 }
 
 // Initial state
 updateSubmitState();
-

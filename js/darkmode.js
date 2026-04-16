@@ -14,8 +14,10 @@ if (stored) {
   applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
 }
 
-btn.addEventListener('click', () => {
-  const isLight = !root.classList.contains('light');
-  applyTheme(isLight);
-  localStorage.setItem('theme', isLight ? 'light' : 'dark');
-});
+if (btn) {
+  btn.addEventListener('click', () => {
+    const isLight = !root.classList.contains('light');
+    applyTheme(isLight);
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+}
